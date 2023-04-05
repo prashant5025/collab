@@ -7,7 +7,7 @@ const UserSchema = new Schema({
   name: {
     type: String,
     required: [true, "Please provide a name"],
-    unique: true,
+    // unique: true,
     trim: true,
     minlength: [3, "Name must be at least 3 characters long"],
     maxlength: [50, "Name must be at most 50 characters long"],
@@ -64,15 +64,21 @@ const UserSchema = new Schema({
 
   },
 
-  avatar: {
+  zipCode: {
     type: String,
-    default: "default.jpg",
+    trim: true,
+    maxlength: [50, "Zip code must be at most 50 characters long"],
 
   },
 
   profileCover: {
     type: String,
     default: "default-cover.jpg",
+  },
+
+  profilePicture: {
+    type: String,
+    default: "default-avatar.jpg",
   },
 
   bio: {
@@ -159,12 +165,15 @@ UserSchema.pre("save", async function (next) {
 })
 
 // Sign JWT and return
-UserSchema.methods.getSignedJwtToken = function () {
-  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
-
-  });
-};
+UserSchema.methods.createJWT = function () {
+  return jwt.sign( {
+    userId: this._id, name: this.name},
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.JWT_EXPIRE,
+    }
+  )
+}
 
 
 // Match user entered password to hashed password in database

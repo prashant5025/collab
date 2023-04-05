@@ -1,23 +1,15 @@
 const User = require("../../models/User.model");
-const jwt = require("jsonwebtoken");
+const { StatusCodes } = require('http-status-codes')
+const { BadRequestError, UnauthenticatedError} = require('../../errors')
+
 
 
 
 const register = async (req, res) => {
-  const { name, email, password, role } = req.body;
-  try {
-    const user = await User.create({
-      name,
-      email,
-      password,
-      role,
-    });
-
-    const token = user.getSignedJwtToken({ id: user._id});
-    res.status(201).json({
-      success: true,
-      token,
-    });
+  const user = await User.create({...req.body });
+  try{
+    const token = user.createJWT();
+    res.status(StatusCodes.CREATED).json({ user: { name: user.name}, token });
     console.log(token);
   } catch (error) {
     res.status(500).json({
@@ -32,32 +24,23 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({
-      success: false,
-      error: "Please provide an email and password",
-    });
+    throw new BadRequestError("Please provide an email and password");
   }
 
   try {
     const user = await User.findOne({ email }).select("+password");
+
+    
+
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: "Invalid credentials",
-      });
+      return res.status(StatusCodes.UNAUTHORIZED).json(" Invalid credentials ");
     }
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      return res.status(404).json({
-        success: false,
-        error: "Invalid credentials",
-      });
+      throw new UnauthenticatedError("Invalid credentials");
     }
-    const token = user.getSignedJwtToken({ id: user._id});
-    res.status(200).json({
-      success: true,
-      token,
-    });
+    const token = user.createJWT();
+    res.status(StatusCodes.OK).json({ user: {name: user.name}, token});
 
   } catch (error) {
     res.status(500).json({
