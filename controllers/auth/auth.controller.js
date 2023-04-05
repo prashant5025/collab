@@ -186,4 +186,5 @@ module.exports = {
   login,
   getAllUsers,
   getMe,
+  forgotPassword,
 };
