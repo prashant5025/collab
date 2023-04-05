@@ -1,5 +1,6 @@
 require('dotenv').config()
 require('express-async-errors');
+
 // require('./controllers/auth/passport.auth')
 
 // security middleware
@@ -7,21 +8,14 @@ const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
 
+
+// packages
 const express = require('express');
 const app = express();
 
-// db connection
+
 const connectDB = require('./db/db.connect');
-
-
-
-
-
-
-
-// middlewares
-
-
+const authentication = require('./middleware/auth.middleware');
 
 
 
@@ -30,6 +24,9 @@ const connectDB = require('./db/db.connect');
 const userRoute = require('./routes/user.route');
 // const ideaRoute = require('./routes/idea.route');
 
+//Middlewares routes
+const notFoundMiddleware = require('./middleware/not-found.middleware');
+const errorHandlerMiddleware = require('./middleware/error-handler.middleware');
 
 
 
@@ -43,7 +40,9 @@ app.use(morgan('dev'));
 app.use('/api/v1/users', userRoute);
 
 
-
+// Middlewares
+app.use(notFoundMiddleware);
+app.use(errorHandlerMiddleware);
 
 
 
