@@ -128,7 +128,8 @@ const UserSchema = new Schema({
 
   role: {
     type: String,
-    enum: ["entrepreneur", "expert", "investor"],
+    enum: ["user","entrepreneur", "expert", "investor"],
+    default: "user"
   },
 
     /*-------------role end here-------------------*/ 
@@ -149,6 +150,10 @@ const UserSchema = new Schema({
   update: {
     type: Date,
     default: Date.now,
+  },
+  token:{
+    type: String,
+    default: ''
   }
 });
 

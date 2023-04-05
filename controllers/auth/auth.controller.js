@@ -1,8 +1,16 @@
 const User = require("../../models/User.model");
 const { StatusCodes } = require('http-status-codes')
 const { BadRequestError, UnauthenticatedError} = require('../../errors')
+const nodemailer = require('nodemailer');
+const randomstring = require('randomstring');
+const bcrypt = require('bcryptjs');
 
 
+
+const securePassword = async (password) => {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
+}
 
 
 const register = async (req, res) => {
@@ -10,7 +18,7 @@ const register = async (req, res) => {
   try{
     const token = user.createJWT();
     res.status(StatusCodes.CREATED).json({ user: { name: user.name}, token });
-    console.log(token);
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -69,53 +77,140 @@ const getMe = async (req, res) => {
 
     
 
-    try{
+  try{
     const user = await User.findById(req.user.id);
-    console.log(user);
-    
-    res.status(200).json({
+    res.status(StatusCodes.OK).json({
         success: true,
         data: user
-
     })
 }catch(error){
-    res.status(500).json({
+    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
         success: false,
         error: error.message
     })
-
   }
 }
 
 // }
 
-const forgotPassword = async (req, res) => {
-    const { email } = req.body;
-    try{
+const sendResetPasswordEmail = async (name, email, token) => {
+  try{
+      const transporter =  nodemailer.createTransport({
+          host: 'smtp.gmail.com',
+          port: 465,
+          secure: true,
+          requireTLS: true,
+          auth: {
+              user: process.env.EMAIL,
+              pass: process.env.PASSWORD
+          }
+      });
 
-      
+      const mailOptions = {
+        from: process.env.EMAIL,
+        to: email,
+        subject: 'Reset Password',
+        html: `<h1>Hi ${name}</h1>
+        <p>Click on the link below to reset your password</p>
+        <a href="http://localhost:3000/reset-password/${token}">Reset Password</a>`
 
-    }catch(error){
-        res.status(500).json({
-            success: false,
-            error: error.message
-        })
     }
+
+    transporter.sendMail(mailOptions, (err, info) => {
+      if(err){
+          console.log(err)
+
+      }else{
+          console.log("Mail has been send:-",info.reaponse)
+      }
+  })
+
+
+  }catch(err){
+      res.status(500).json({
+          success: false,
+          error: err.message
+      });
+      
+  }
 }
 
-// const resetPassword = async (req, res) => {
-//     const { resetPasswordToken } = req.params;
-//     const { password } = req.body;
-//     try{
 
-//     }catch(error){
-//         res.status(500).json({
-//             success: false,
-//             error: error.message
+const forgotPassword = async ( req,  res) => {
+  try{
+      const email = req.body.email;
+      const userData = await User.findOne({email: email});
 
-//         })
-//     }
-// }
+      if(userData){
+
+          const randomString = randomstring.generate();
+          const data = User.updateOne({email: email},
+              {
+                  $set: {
+                      token: randomString
+                  }
+              });
+          sendResetPasswordEmail(userData.name, userData.email, randomString)
+          
+          res.status(StatusCodes.OK).json({
+              success: true,
+              message: "Reset password link has been sent to your email"
+          });
+
+      }else{
+          res.status(StatusCodes.OK).json({
+              success: true,
+              message: "This email is not registered with us"
+          })
+      }
+  }catch(err){
+      res.status(500).json({
+          success: false,
+          error: err.message
+      })
+  }
+}
+
+
+const resetPassword = async (req, res) => {
+  try {
+    const token = req.params.token;
+    const tokenData = await User.findOne({ token: token });
+    if (tokenData) {
+      const  password = req.body.password;
+      const newpassword = await securePassword(password);
+      const userData = await User.findByIdAndUpdate({
+        _id: tokenData._id,
+
+      },
+      {
+        $set: {
+          password: newpassword,
+          token: ""
+        }
+      },{
+        new: true
+      });
+      res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Password has been reset successfully",
+        data: userData
+      })
+
+
+    }else{
+        res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Invalid token"
+        })
+    }
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      error: error.message,
+    });
+  }
+}
 
 // const updateDetails = async (req, res) => {
 //     const fieldsToUpdate = {
@@ -146,23 +241,23 @@ const forgotPassword = async (req, res) => {
 //     }
 // }
 
-// const logout = async (req, res) => {
-//     try{
-//         res.cookie('token', 'none', {
-//             expires: new Date(Date.now() + 10 * 1000),
-//             httpOnly: true
-//         })
-//         res.status(200).json({
-//             success: true,
-//             data: {}
-//         })
-//     }catch(error){
-//         res.status(500).json({
-//             success: false,
-//             error: error.message
-//         })
-//     }
-// }
+const logout = async (req, res) => {
+    try{
+        res.cookie('token', 'none', {
+            expires: new Date(Date.now() + 10 * 1000),
+            httpOnly: true
+        })
+        res.status(200).json({
+            success: true,
+            data: {}
+        })
+    }catch(error){
+        res.status(500).json({
+            success: false,
+            error: error.message
+        })
+    }
+}
 
 module.exports = {
   register,
@@ -170,4 +265,6 @@ module.exports = {
   getAllUsers,
   getMe,
   forgotPassword,
+  logout,
+  resetPassword
 };
