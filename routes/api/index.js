@@ -3,7 +3,7 @@
 const passport = require('passport');
 const { Router } = require('express');
 const { StatusCodes } = require('http-status-codes');
-const { register, login, getAllUsers } = require('../../controllers/auth/auth.controller');
+const { register, login, getAllUsers } = require('../../controllers/User/auth/auth.controller');
 
 const router = Router();
 

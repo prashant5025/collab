@@ -1,6 +1,7 @@
 require('dotenv').config()
 require('express-async-errors');
 
+
 // require('./controllers/auth/passport.auth')
 
 // security middleware
@@ -35,9 +36,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
+// app.use(passport.initialize());
+// app.use(passport.session());
+
+// 404 route
 
 
 app.use('/api/v1/users', userRoute);
+
 
 
 // Middlewares
