@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const passportLocalMongoose = require("passport-local-mongoose");
+
 
 const UserSchema = new Schema({
   name: {
@@ -85,7 +87,7 @@ const UserSchema = new Schema({
     type: String,
     maxlength: [500, "Bio must be at most 500 characters long"],
   },
-    /*-------------social link start-------------------*/ 
+  /*-------------social link start-------------------*/
 
   website: {
     type: String,
@@ -122,17 +124,17 @@ const UserSchema = new Schema({
       "Please provide a valid linkedin link",
     ],
   },
-  /*-------------social link end-------------------*/ 
+  /*-------------social link end-------------------*/
 
-    /*-------------role start here-------------------*/ 
+  /*-------------role start here-------------------*/
 
   role: {
     type: String,
-    enum: ["user","entrepreneur", "expert", "investor"],
+    enum: ["user", "entrepreneur", "expert", "investor"],
     default: "user"
   },
 
-    /*-------------role end here-------------------*/ 
+  /*-------------role end here-------------------*/
 
 
   // reset password start
@@ -151,7 +153,7 @@ const UserSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  token:{
+  token: {
     type: String,
     default: ''
   }
@@ -171,8 +173,9 @@ UserSchema.pre("save", async function (next) {
 
 // Sign JWT and return
 UserSchema.methods.createJWT = function () {
-  return jwt.sign( {
-    userId: this._id, name: this.name},
+  return jwt.sign({
+    userId: this._id, name: this.name
+  },
     process.env.JWT_SECRET,
     {
       expiresIn: process.env.JWT_EXPIRE,
@@ -206,8 +209,15 @@ UserSchema.methods.getResetPasswordToken = function () {
 };
 
 
+UserSchema.plugin(passportLocalMongoose, {
+  usernameField: "email",
+  usernameLowerCase: true,
+  session: false,
+  errorMessages: {
+    UserExistsError: "A user with the given email is already registered",
+  },
 
-
+});
 
 
 
