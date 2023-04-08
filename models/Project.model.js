@@ -1,58 +1,59 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const projectSchema = new Schema({
+const ProjectSchema = new Schema({
     name: {
-        title: String,
-        minlength: [3, "Project name must be at least 3 characters long"],
+        type: String,
+        required: [true, "Please provide a name"],
+        trim: true,
     },
     entrepreneur_id: {
-        // string(foreign key to entrepreneur table)
-
         type: Schema.Types.ObjectId,
-        ref: "Entrepreneur",
+        required: [true, "Please provide an entrepreneur_id"],
     },
     description: {
         type: String,
-        minlength: [3, "Project description must be at least 3 characters long"],
+        required: [true, "Please provide a description"],
+        trim: true,
     },
     category: {
         type: String,
-        minlength: [3, "Project category must be at least 3 characters long"],
+        required: [true, "Please provide a category"],
+        trim: true,
     },
     location: {
         type: String,
-        minlength: [3, "Project location must be at least 3 characters long"],
-
+        required: [true, "Please provide a location"],
+        trim: true,
     },
     status: {
         type: String,
-        enum: ["in progress", "completed", "failed"],
-        default: "in progress",
+        required: [true, "Please provide a status"],
+        trim: true,
     },
     investment_required: {
         type: Number,
-        min: [0, "Project investment required must be at least 0"],
     },
     investment_received: {
         type: Number,
-        min: [0, "Project investment received must be at least 0"],
     },
     expertise_required: {
         type: String,
-        minlength: [3, "Project expertise required must be at least 3 characters long"],
+        required: [true, "Please provide a expertise_required"],
+        trim: true,
     },
     start_date: {
         type: Date,
         default: Date.now,
-
+        required: [true, "Please provide a start_date"],
     },
     end_date: {
         type: Date,
-        
     },
 
     
-})
+},{timestamps:true});
 
-module.exports = mongoose.model("Project", projectSchema);
+const Project = mongoose.model('Project', ProjectSchema);
+
+module.exports = Project;

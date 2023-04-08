@@ -70,14 +70,11 @@ const UserSchema = new Schema({
     type: String,
     trim: true,
     maxlength: [50, "Zip code must be at most 50 characters long"],
-
   },
-
   profileCover: {
     type: String,
     default: "default-cover.jpg",
   },
-
   profilePicture: {
     type: String,
     default: "default-avatar.jpg",
@@ -151,13 +148,13 @@ const UserSchema = new Schema({
 
   update: {
     type: Date,
-    default: Date.now,
+    default: Date,
   },
   token: {
     type: String,
     default: ''
   }
-});
+},{timestamps:true});
 
 // Encrypt password using bcrypt
 

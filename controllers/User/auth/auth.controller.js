@@ -85,6 +85,7 @@ passport.use(
         picture: profile.photos[0].value,
       };
       try {
+        // check if user exists in our database
         let user = await User.findOne({ googleId: profile.id });
         // if user exists, return user
         if (user) {
