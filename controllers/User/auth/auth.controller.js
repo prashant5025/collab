@@ -16,13 +16,20 @@ passport.deserializeUser(User.deserializeUser());
 
 
 
+
+
+
+
 /*-----------Login and register using email and password------------------- */ 
 
 const register = async (req, res) => {
   const user = await User.create({...req.body });
   try{
     const token = user.createJWT();
-    res.status(StatusCodes.CREATED).json({ user: { name: user.name}, token });
+    res.status(StatusCodes.CREATED).json({ user: {name: user.name}, token});
+    // const { name } = user;
+    // res.redirect(`api/v1/user/${user.name}/dashboard`)
+    // return;
 
   } catch (error) {
     res.status(500).json({
@@ -53,7 +60,12 @@ const login = async (req, res) => {
       throw new UnauthenticatedError("Invalid credentials");
     }
     const token = user.createJWT();
-    res.status(StatusCodes.OK).json({ user: {name: user.name}, token});
+    res.status(StatusCodes.OK).json({ user: {name: user.name}, token, redirect: `/${user.name}/dashboard`});
+
+    // const { name } = user;
+
+    // res.redirect(`/${name}/dashboard`)
+    // return;
 
   } catch (error) {
     res.status(500).json({
@@ -63,6 +75,9 @@ const login = async (req, res) => {
   }
 };
 /*-----------Login and register using email and password------------------- */ 
+
+
+
 
 
 /*-----------Login and register using google------------------- */ 

@@ -7,9 +7,9 @@ const {createProject,updateProject,getProject,getProjects} = require('../control
 
 
 
-router.post('/',createProject);
-router.put('/:id',updateProject);
-router.get('/:id',getProject);
-router.get('/',getProjects);
+router.post('/create',createProject);
+router.put('/:userId/:projectId/update',updateProject);
+router.get('/:userId/:projectId',getProject);
+router.get('/:userId',getProjects);
 
 module.exports = router;

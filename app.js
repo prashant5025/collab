@@ -26,12 +26,11 @@ const errorHandlerMiddleware = require('./middlewares/error-handler.middleware')
 const app = express();
 
 // passport authentication middleware
-// uncomment the following line after configuring passport
 // require('./controllers/auth/passport.auth')
 app.use(session({
   secret: process.env.SESSION_SECRET,
-  // resave: false,
-  // saveUninitialized: false,
+  resave: false,
+  saveUninitialized: false,
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
   },
@@ -60,6 +59,8 @@ app.use('/api/v1/users', userRoute);
 // project url: http://localhost:8080/api/v1/${username}/project
 
 app.use('/api/v1/project', authentication, projectRoute);
+
+
 
 // middleware
 app.use(notFoundMiddleware);
